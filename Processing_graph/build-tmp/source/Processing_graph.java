@@ -4,7 +4,7 @@ import processing.event.*;
 import processing.opengl.*; 
 
 import ddf.minim.*; 
-import ddf.minim.signals.*; 
+import ddf.minim.effects.*; 
 import java.util.*; 
 import processing.serial.*; 
 
@@ -30,11 +30,15 @@ public class Processing_graph extends PApplet {
 
 
 Minim minim;
-AudioOutput out;
-SineWave sine;
+AudioPlayer player;
+DownGain down;
 
 float voltageMax; //\u96fb\u5727\u306e\u6700\u5927\u5024
 float timeMax; //\u96fb\u5727\u304c\u6700\u5927\u5024\u3060\u3063\u305f\u3068\u304d\u306e\u6642\u9593
+float VOL_MIN = 110;
+float VOL_MAX = 130;
+
+float DGAIN   = 1;
 
 ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
@@ -43,11 +47,19 @@ public void setup() {
   // size(displayWidth, displayHeight);
   size(800, 500);
 
-  minim = new Minim(this);
+  minim  = new Minim(this);
+  player = minim.loadFile("rain.mp3");
+  down   = new DownGain(DGAIN);
+  // player.addEffect(down);
+  player.play();
+  player.addEffect(down);
+  player.addEffect(down);
+  player.addEffect(down);
 
   noLoop();
   //\u30dd\u30fc\u30c8\u3092\u8a2d\u5b9a
-  PortSelected = 4;
+  PortSelected = 3;
+  // PortSelected = 7;
   //\u30b7\u30ea\u30a2\u30eb\u30dd\u30fc\u30c8\u3092\u521d\u671f\u5316
   SerialPortSetup();
 }
@@ -59,7 +71,7 @@ public void draw() {
   //\u6700\u5927\u5024\u30920\u306b\u521d\u671f\u5316
   voltageMax = timeMax = 0;
 
-  if ( DataRecieved3 ) {
+  if (DataRecieved3) {
     //\u96fb\u5727\u306e\u6700\u5927\u5024\u3068\u3001\u305d\u306e\u3068\u304d\u306e\u6642\u9593\u3092\u53d6\u5f97
     for (int i = 0; i < Voltage3.length; i++) {
       if (voltageMax < Voltage3[i]) {
@@ -68,17 +80,20 @@ public void draw() {
       }
     }
 
-    if (voltageMax < 180) {
+    if (voltageMax < VOL_MAX) {
       HashMap<String, Float> hash = new HashMap();
       float random_x              = random(1, width);
       float velocity              = map(timeMax, 120, 140, 1, 1.5f);
-      float radius                = map(voltageMax, 130, 180, 30, 5) * velocity;
+      float radius                = map(voltageMax, VOL_MIN, VOL_MAX, 30, 5) * velocity;
 
       hash.put("x", random_x);
       hash.put("y", 0.0f);
       hash.put("radius", radius);
       ballList.add(hash);
       println(radius);
+      // player.addEffect(down);
+    } else {
+      // player.removeEffect(0);
     }
 
     for (int i = 0; i < ballList.size(); i++) {
@@ -110,6 +125,47 @@ public void stop() {
   myPort.stop();
   super.stop();
 }
+
+class DownGain implements AudioEffect {
+  float gain = 1.0f;
+
+  DownGain(float g) {
+    gain = g;
+  }
+
+  public void process(float[] samp) {
+    float[] out = new float[samp.length];
+    for ( int i = 0; i < samp.length; i++ ) {
+      out[i] = samp[i] * gain;
+    }
+    arraycopy(out, samp);
+  }
+
+  public void process(float[] left, float[] right) {
+    process(left);
+    process(right);
+  }
+}
+// class DownGain implements AudioEffect {
+//   float gain = 1.0;
+
+//   DownGain(float g) {
+//     gain = g;
+//   }
+
+//   void process(float[] samp) {
+//     float[] out = new float[samp.length];
+//     for ( int i = 0; i < samp.length; i++ ) {
+//       out[i] = samp[i] * gain;
+//     }
+//     arraycopy(out, samp);
+//   }
+
+//   void process(float[] left, float[] right) {
+//     process(left);
+//     process(right);
+//   }
+// }
 
 /*   =================================================================================       
  The Graph class contains functions and variables that have been created to draw 
@@ -544,8 +600,10 @@ class Graph
 
 
 
-int SerialPortNumber = 4;
-int PortSelected     = 4;
+int SerialPortNumber = 3;
+int PortSelected     = 3;
+// int SerialPortNumber = 7;
+// int PortSelected     = 7;
 
 /*   =================================================================================
  Global variables

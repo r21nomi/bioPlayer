@@ -1,6 +1,8 @@
 import processing.serial.*;
-int SerialPortNumber = 4;
-int PortSelected     = 4;
+int SerialPortNumber = 3;
+int PortSelected     = 3;
+// int SerialPortNumber = 7;
+// int PortSelected     = 7;
 
 /*   =================================================================================
  Global variables
