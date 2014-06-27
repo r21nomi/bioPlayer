@@ -14,10 +14,18 @@ DownGain down;
 
 float voltageMax; //電圧の最大値
 float timeMax; //電圧が最大値だったときの時間
-float VOL_MIN = 110;
-float VOL_MAX = 130;
+// float VOL_MIN = 110;
+// float VOL_MAX = 130;
+float VOL_MIN  = 100;
+float VOL_MAX  = 500;
+float BOUNDARY = 200;
 
-float DGAIN   = 1;
+// デバッグ用
+boolean isDelay = true;
+float maxVol    = 0;
+float minVol    = 200;
+
+float DGAIN   = 100;
 
 ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
@@ -29,21 +37,23 @@ void setup() {
   minim  = new Minim(this);
   player = minim.loadFile("rain.mp3");
   down   = new DownGain(DGAIN);
-  // player.addEffect(down);
   player.play();
-  player.addEffect(down);
-  player.addEffect(down);
-  player.addEffect(down);
 
   noLoop();
   //ポートを設定
-  PortSelected = 3;
+  PortSelected = 2;
   // PortSelected = 7;
   //シリアルポートを初期化
   SerialPortSetup();
 }
 
 void draw() {
+  // 起動時のセンシングされてない値をカウントを最大値／最小値にカウントしないために待機処理を入れる
+  if (isDelay) {
+    delay(5000);
+    isDelay = false;
+  }
+
   background(63);
 //  fill(255);
 
@@ -53,13 +63,21 @@ void draw() {
   if (DataRecieved3) {
     //電圧の最大値と、そのときの時間を取得
     for (int i = 0; i < Voltage3.length; i++) {
-      if (voltageMax < Voltage3[i]) {
-        voltageMax = Voltage3[i];
+      // float v = map(Voltage3[i], VOL_MIN, VOL_MAX, 100, 300);
+      float v = Voltage3[i];
+      if (voltageMax < v) {
+        voltageMax = v;
         timeMax    = Time3[i];
+        // Audio
+        player.removeEffect(down);  // エフェクトを削除
+        DGAIN = voltageMax / 10;
+        down  = new DownGain(DGAIN);
+        player.addEffect(down);  // 新たにエフェクトを追加
       }
     }
 
-    if (voltageMax < VOL_MAX) {
+    // if (voltageMax < VOL_MAX) {
+    if (voltageMax > BOUNDARY) {
       HashMap<String, Float> hash = new HashMap();
       float random_x              = random(1, width);
       float velocity              = map(timeMax, 120, 140, 1, 1.5);
@@ -69,7 +87,7 @@ void draw() {
       hash.put("y", 0.0);
       hash.put("radius", radius);
       ballList.add(hash);
-      println(radius);
+      // println(radius);
       // player.addEffect(down);
     } else {
       // player.removeEffect(0);
@@ -81,7 +99,7 @@ void draw() {
       float _y      = (Float)ballList.get(i).get("y");
       float _radius = (Float)ballList.get(i).get("radius");
       ellipse(_x, _y, _radius, _radius);
-      float _new_y = _y + 10;
+      float _new_y  = _y + 10;
 
       if (_new_y > height) {
         ballList.remove(i);
@@ -90,13 +108,20 @@ void draw() {
       }
     }
 
-    //時間と電圧の範囲(最小値と最大値)を表示
-    // println("Time range: " +  min(Time3) + " - " + max(Time3), 20, 20);
-    // println("Voltage range: " +  min(Voltage3) + " - " + max(Voltage3), 20, 40);
+    // デバッグ
+    if (voltageMax > maxVol) {
+      maxVol = voltageMax;
+    } else if (voltageMax < minVol) {
+      minVol = voltageMax;
+    }
 
     //電圧の最大値と、その時の時間を表示
-    println("Time: " + timeMax);
-    println("Voltage: " + voltageMax);
+    // println("Time: " + timeMax);
+    // println("Voltage: " + voltageMax);
+
+    // デバッグ
+    println("Voltage: " + voltageMax + ", maxVol: " + maxVol);
+    println("minVol: " + minVol);
   }
 }
 
@@ -105,6 +130,7 @@ void stop() {
   super.stop();
 }
 
+// Audio
 class DownGain implements AudioEffect {
   float gain = 1.0;
 

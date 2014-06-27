@@ -35,10 +35,18 @@ DownGain down;
 
 float voltageMax; //\u96fb\u5727\u306e\u6700\u5927\u5024
 float timeMax; //\u96fb\u5727\u304c\u6700\u5927\u5024\u3060\u3063\u305f\u3068\u304d\u306e\u6642\u9593
-float VOL_MIN = 110;
-float VOL_MAX = 130;
+// float VOL_MIN = 110;
+// float VOL_MAX = 130;
+float VOL_MIN = 100;
+float VOL_MAX = 500;
+float BOUNDARY = 200;
 
-float DGAIN   = 1;
+float maxVol = 0;
+float minVol = 200;
+
+boolean isDelay = true;
+
+float DGAIN   = 100;
 
 ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
@@ -52,19 +60,22 @@ public void setup() {
   down   = new DownGain(DGAIN);
   // player.addEffect(down);
   player.play();
-  player.addEffect(down);
-  player.addEffect(down);
-  player.addEffect(down);
 
   noLoop();
   //\u30dd\u30fc\u30c8\u3092\u8a2d\u5b9a
-  PortSelected = 3;
+  PortSelected = 2;
   // PortSelected = 7;
   //\u30b7\u30ea\u30a2\u30eb\u30dd\u30fc\u30c8\u3092\u521d\u671f\u5316
   SerialPortSetup();
 }
 
 public void draw() {
+  // \u8d77\u52d5\u6642\u306e\u30bb\u30f3\u30b7\u30f3\u30b0\u3055\u308c\u3066\u306a\u3044\u5024\u3092\u30ab\u30a6\u30f3\u30c8\u3092\u6700\u5927\u5024\uff0f\u6700\u5c0f\u5024\u306b\u30ab\u30a6\u30f3\u30c8\u3057\u306a\u3044\u305f\u3081\u306b\u5f85\u6a5f\u51e6\u7406\u3092\u5165\u308c\u308b
+  if (isDelay) {
+    delay(5000);
+    isDelay = false;
+  }
+
   background(63);
 //  fill(255);
 
@@ -74,13 +85,21 @@ public void draw() {
   if (DataRecieved3) {
     //\u96fb\u5727\u306e\u6700\u5927\u5024\u3068\u3001\u305d\u306e\u3068\u304d\u306e\u6642\u9593\u3092\u53d6\u5f97
     for (int i = 0; i < Voltage3.length; i++) {
-      if (voltageMax < Voltage3[i]) {
-        voltageMax = Voltage3[i];
+      // float v = map(Voltage3[i], VOL_MIN, VOL_MAX, 100, 300);
+      float v = Voltage3[i];
+      if (voltageMax < v) {
+        voltageMax = v;
         timeMax    = Time3[i];
+        // Audio
+        player.removeEffect(down);
+        DGAIN      = voltageMax / 10;
+        down       = new DownGain(DGAIN);
+        player.addEffect(down);
       }
     }
 
-    if (voltageMax < VOL_MAX) {
+    // if (voltageMax < VOL_MAX) {
+    if (voltageMax > BOUNDARY) {
       HashMap<String, Float> hash = new HashMap();
       float random_x              = random(1, width);
       float velocity              = map(timeMax, 120, 140, 1, 1.5f);
@@ -90,7 +109,7 @@ public void draw() {
       hash.put("y", 0.0f);
       hash.put("radius", radius);
       ballList.add(hash);
-      println(radius);
+      // println(radius);
       // player.addEffect(down);
     } else {
       // player.removeEffect(0);
@@ -102,7 +121,7 @@ public void draw() {
       float _y      = (Float)ballList.get(i).get("y");
       float _radius = (Float)ballList.get(i).get("radius");
       ellipse(_x, _y, _radius, _radius);
-      float _new_y = _y + 10;
+      float _new_y  = _y + 10;
 
       if (_new_y > height) {
         ballList.remove(i);
@@ -111,13 +130,20 @@ public void draw() {
       }
     }
 
-    //\u6642\u9593\u3068\u96fb\u5727\u306e\u7bc4\u56f2(\u6700\u5c0f\u5024\u3068\u6700\u5927\u5024)\u3092\u8868\u793a
-    // println("Time range: " +  min(Time3) + " - " + max(Time3), 20, 20);
-    // println("Voltage range: " +  min(Voltage3) + " - " + max(Voltage3), 20, 40);
+    // \u30c7\u30d0\u30c3\u30b0
+    if (voltageMax > maxVol) {
+      maxVol = voltageMax;
+    } else if (voltageMax < minVol) {
+      minVol = voltageMax;
+    }
 
     //\u96fb\u5727\u306e\u6700\u5927\u5024\u3068\u3001\u305d\u306e\u6642\u306e\u6642\u9593\u3092\u8868\u793a
-    println("Time: " + timeMax);
-    println("Voltage: " + voltageMax);
+    // println("Time: " + timeMax);
+    // println("Voltage: " + voltageMax);
+
+    // \u30c7\u30d0\u30c3\u30b0
+    println("Voltage: " + voltageMax + ", maxVol: " + maxVol);
+    println("minVol: " + minVol);
   }
 }
 
@@ -126,6 +152,7 @@ public void stop() {
   super.stop();
 }
 
+// Audio
 class DownGain implements AudioEffect {
   float gain = 1.0f;
 
@@ -600,8 +627,8 @@ class Graph
 
 
 
-int SerialPortNumber = 3;
-int PortSelected     = 3;
+int SerialPortNumber = 2;
+int PortSelected     = 2;
 // int SerialPortNumber = 7;
 // int PortSelected     = 7;
 
