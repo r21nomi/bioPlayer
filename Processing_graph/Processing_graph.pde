@@ -4,13 +4,7 @@
  *
  */
 
-import ddf.minim.*;
-import ddf.minim.effects.*;
 import java.util.*;
-
-Minim minim;
-AudioPlayer player;
-DownGain down;
 
 float voltageMax; //電圧の最大値
 float timeMax; //電圧が最大値だったときの時間
@@ -21,11 +15,12 @@ float VOL_MAX  = 500;
 float BOUNDARY = 200;
 
 // デバッグ用
-boolean isDelay = true;
-float maxVol    = 0;
-float minVol    = 200;
+boolean isDelay  = true;
+float maxVol     = 0;
+float minVol     = 200;
 
-float DGAIN   = 100;
+SCClient scClient;
+boolean playAble = true;
 
 ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
@@ -33,11 +28,7 @@ void setup() {
   //画面サイズ
   // size(displayWidth, displayHeight);
   size(800, 500);
-
-  minim  = new Minim(this);
-  player = minim.loadFile("rain.mp3");
-  down   = new DownGain(DGAIN);
-  player.play();
+  scClient = new SCClient();
 
   noLoop();
   //ポートを設定
@@ -55,7 +46,6 @@ void draw() {
   }
 
   background(63);
-//  fill(255);
 
   //最大値を0に初期化
   voltageMax = timeMax = 0;
@@ -69,14 +59,15 @@ void draw() {
         voltageMax = v;
         timeMax    = Time3[i];
         // Audio
-        player.removeEffect(down);  // エフェクトを削除
-        DGAIN = voltageMax / 10;
-        down  = new DownGain(DGAIN);
-        player.addEffect(down);  // 新たにエフェクトを追加
+        if (playAble && voltageMax > 200) {
+          playAble = false;
+          scClient.play(voltageMax);
+          delay(100);  // 連続再生をさけるために遅延による間引きを入れる
+          playAble = true;
+        }
       }
     }
 
-    // if (voltageMax < VOL_MAX) {
     if (voltageMax > BOUNDARY) {
       HashMap<String, Float> hash = new HashMap();
       float random_x              = random(1, width);
@@ -87,10 +78,6 @@ void draw() {
       hash.put("y", 0.0);
       hash.put("radius", radius);
       ballList.add(hash);
-      // println(radius);
-      // player.addEffect(down);
-    } else {
-      // player.removeEffect(0);
     }
 
     for (int i = 0; i < ballList.size(); i++) {
@@ -115,10 +102,6 @@ void draw() {
       minVol = voltageMax;
     }
 
-    //電圧の最大値と、その時の時間を表示
-    // println("Time: " + timeMax);
-    // println("Voltage: " + voltageMax);
-
     // デバッグ
     println("Voltage: " + voltageMax + ", maxVol: " + maxVol);
     println("minVol: " + minVol);
@@ -128,26 +111,4 @@ void draw() {
 void stop() {
   myPort.stop();
   super.stop();
-}
-
-// Audio
-class DownGain implements AudioEffect {
-  float gain = 1.0;
-
-  DownGain(float g) {
-    gain = g;
-  }
-
-  void process(float[] samp) {
-    float[] out = new float[samp.length];
-    for ( int i = 0; i < samp.length; i++ ) {
-      out[i] = samp[i] * gain;
-    }
-    arraycopy(out, samp);
-  }
-
-  void process(float[] left, float[] right) {
-    process(left);
-    process(right);
-  }
 }

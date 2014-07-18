@@ -3,10 +3,10 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
-import ddf.minim.*; 
-import ddf.minim.effects.*; 
 import java.util.*; 
 import processing.serial.*; 
+import supercollider.*; 
+import oscP5.*; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -27,12 +27,6 @@ public class Processing_graph extends PApplet {
 
 
 
-
-
-Minim minim;
-AudioPlayer player;
-DownGain down;
-
 float voltageMax; //\u96fb\u5727\u306e\u6700\u5927\u5024
 float timeMax; //\u96fb\u5727\u304c\u6700\u5927\u5024\u3060\u3063\u305f\u3068\u304d\u306e\u6642\u9593
 // float VOL_MIN = 110;
@@ -42,11 +36,12 @@ float VOL_MAX  = 500;
 float BOUNDARY = 200;
 
 // \u30c7\u30d0\u30c3\u30b0\u7528
-boolean isDelay = true;
-float maxVol    = 0;
-float minVol    = 200;
+boolean isDelay  = true;
+float maxVol     = 0;
+float minVol     = 200;
 
-float DGAIN   = 100;
+SCClient scClient;
+boolean playAble = true;
 
 ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
@@ -54,11 +49,7 @@ public void setup() {
   //\u753b\u9762\u30b5\u30a4\u30ba
   // size(displayWidth, displayHeight);
   size(800, 500);
-
-  minim  = new Minim(this);
-  player = minim.loadFile("rain.mp3");
-  down   = new DownGain(DGAIN);
-  player.play();
+  scClient = new SCClient();
 
   noLoop();
   //\u30dd\u30fc\u30c8\u3092\u8a2d\u5b9a
@@ -76,7 +67,6 @@ public void draw() {
   }
 
   background(63);
-//  fill(255);
 
   //\u6700\u5927\u5024\u30920\u306b\u521d\u671f\u5316
   voltageMax = timeMax = 0;
@@ -90,14 +80,15 @@ public void draw() {
         voltageMax = v;
         timeMax    = Time3[i];
         // Audio
-        player.removeEffect(down);  // \u30a8\u30d5\u30a7\u30af\u30c8\u3092\u524a\u9664
-        DGAIN = voltageMax / 10;
-        down  = new DownGain(DGAIN);
-        player.addEffect(down);  // \u65b0\u305f\u306b\u30a8\u30d5\u30a7\u30af\u30c8\u3092\u8ffd\u52a0
+        if (playAble && voltageMax > 200) {
+          playAble = false;
+          scClient.play(voltageMax);
+          delay(100);  // \u9023\u7d9a\u518d\u751f\u3092\u3055\u3051\u308b\u305f\u3081\u306b\u9045\u5ef6\u306b\u3088\u308b\u9593\u5f15\u304d\u3092\u5165\u308c\u308b
+          playAble = true;
+        }
       }
     }
 
-    // if (voltageMax < VOL_MAX) {
     if (voltageMax > BOUNDARY) {
       HashMap<String, Float> hash = new HashMap();
       float random_x              = random(1, width);
@@ -108,10 +99,6 @@ public void draw() {
       hash.put("y", 0.0f);
       hash.put("radius", radius);
       ballList.add(hash);
-      // println(radius);
-      // player.addEffect(down);
-    } else {
-      // player.removeEffect(0);
     }
 
     for (int i = 0; i < ballList.size(); i++) {
@@ -136,10 +123,6 @@ public void draw() {
       minVol = voltageMax;
     }
 
-    //\u96fb\u5727\u306e\u6700\u5927\u5024\u3068\u3001\u305d\u306e\u6642\u306e\u6642\u9593\u3092\u8868\u793a
-    // println("Time: " + timeMax);
-    // println("Voltage: " + voltageMax);
-
     // \u30c7\u30d0\u30c3\u30b0
     println("Voltage: " + voltageMax + ", maxVol: " + maxVol);
     println("minVol: " + minVol);
@@ -149,28 +132,6 @@ public void draw() {
 public void stop() {
   myPort.stop();
   super.stop();
-}
-
-// Audio
-class DownGain implements AudioEffect {
-  float gain = 1.0f;
-
-  DownGain(float g) {
-    gain = g;
-  }
-
-  public void process(float[] samp) {
-    float[] out = new float[samp.length];
-    for ( int i = 0; i < samp.length; i++ ) {
-      out[i] = samp[i] * gain;
-    }
-    arraycopy(out, samp);
-  }
-
-  public void process(float[] left, float[] right) {
-    process(left);
-    process(right);
-  }
 }
 // class DownGain implements AudioEffect {
 //   float gain = 1.0;
@@ -837,6 +798,26 @@ How that works: if xMSB = 10001001   and xLSB = 0100 0011
   }
   redraw();
   //    }
+}
+
+
+
+class SCClient {
+  Synth synth;
+
+  SCClient() {
+
+  }
+
+  public void play(float voltage) {
+    // \u65b0\u898f\u306b\u697d\u5668\u3092\u5b9a\u7fa9(\u307e\u3060\u751f\u6210\u306f\u3055\u308c\u305a)
+    synth = new Synth("testInst");
+    // \u5f15\u6570\u3092\u8a2d\u5b9a
+    synth.set("amp", 0.5f);
+    synth.set("freq", map(voltage, height, 0, 20, 8000));
+    // \u697d\u5668\u3092\u751f\u6210
+    synth.create();
+  }
 }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "Processing_graph" };
