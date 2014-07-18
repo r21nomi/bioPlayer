@@ -37,14 +37,14 @@ float voltageMax; //\u96fb\u5727\u306e\u6700\u5927\u5024
 float timeMax; //\u96fb\u5727\u304c\u6700\u5927\u5024\u3060\u3063\u305f\u3068\u304d\u306e\u6642\u9593
 // float VOL_MIN = 110;
 // float VOL_MAX = 130;
-float VOL_MIN = 100;
-float VOL_MAX = 500;
+float VOL_MIN  = 100;
+float VOL_MAX  = 500;
 float BOUNDARY = 200;
 
-float maxVol = 0;
-float minVol = 200;
-
+// \u30c7\u30d0\u30c3\u30b0\u7528
 boolean isDelay = true;
+float maxVol    = 0;
+float minVol    = 200;
 
 float DGAIN   = 100;
 
@@ -58,7 +58,6 @@ public void setup() {
   minim  = new Minim(this);
   player = minim.loadFile("rain.mp3");
   down   = new DownGain(DGAIN);
-  // player.addEffect(down);
   player.play();
 
   noLoop();
@@ -91,10 +90,10 @@ public void draw() {
         voltageMax = v;
         timeMax    = Time3[i];
         // Audio
-        player.removeEffect(down);
-        DGAIN      = voltageMax / 10;
-        down       = new DownGain(DGAIN);
-        player.addEffect(down);
+        player.removeEffect(down);  // \u30a8\u30d5\u30a7\u30af\u30c8\u3092\u524a\u9664
+        DGAIN = voltageMax / 10;
+        down  = new DownGain(DGAIN);
+        player.addEffect(down);  // \u65b0\u305f\u306b\u30a8\u30d5\u30a7\u30af\u30c8\u3092\u8ffd\u52a0
       }
     }
 
