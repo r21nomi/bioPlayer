@@ -31,9 +31,11 @@ float voltageMax; //\u96fb\u5727\u306e\u6700\u5927\u5024
 float timeMax; //\u96fb\u5727\u304c\u6700\u5927\u5024\u3060\u3063\u305f\u3068\u304d\u306e\u6642\u9593
 // float VOL_MIN = 110;
 // float VOL_MAX = 130;
-float VOL_MIN  = 100;
-float VOL_MAX  = 500;
-float BOUNDARY = 200;
+// float VOL_MIN  = 100;
+// float VOL_MAX  = 500;
+float VOL_MIN  = 20;
+float VOL_MAX  = 80;
+float BOUNDARY = 60;
 
 // \u30c7\u30d0\u30c3\u30b0\u7528
 boolean isDelay  = true;
@@ -47,8 +49,10 @@ ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
 public void setup() {
   //\u753b\u9762\u30b5\u30a4\u30ba
-  // size(displayWidth, displayHeight);
-  size(800, 500);
+  size(displayWidth, displayHeight);
+  // size(800, 500);
+  frameRate(60);
+  background(0);
   scClient = new SCClient();
 
   noLoop();
@@ -66,7 +70,10 @@ public void draw() {
     isDelay = false;
   }
 
-  background(63);
+  noStroke();
+  fill(0, 30);
+  rectMode(CORNER);
+  rect(0, 0, width, height);
 
   //\u6700\u5927\u5024\u30920\u306b\u521d\u671f\u5316
   voltageMax = timeMax = 0;
@@ -80,7 +87,7 @@ public void draw() {
         voltageMax = v;
         timeMax    = Time3[i];
         // Audio
-        if (playAble && voltageMax > 200) {
+        if (playAble && voltageMax > BOUNDARY) {
           playAble = false;
           scClient.play(voltageMax);
           delay(100);  // \u9023\u7d9a\u518d\u751f\u3092\u3055\u3051\u308b\u305f\u3081\u306b\u9045\u5ef6\u306b\u3088\u308b\u9593\u5f15\u304d\u3092\u5165\u308c\u308b
@@ -100,6 +107,8 @@ public void draw() {
       hash.put("radius", radius);
       ballList.add(hash);
     }
+
+    fill(255, 100);
 
     for (int i = 0; i < ballList.size(); i++) {
       noStroke();

@@ -10,9 +10,11 @@ float voltageMax; //電圧の最大値
 float timeMax; //電圧が最大値だったときの時間
 // float VOL_MIN = 110;
 // float VOL_MAX = 130;
-float VOL_MIN  = 100;
-float VOL_MAX  = 500;
-float BOUNDARY = 200;
+// float VOL_MIN  = 100;
+// float VOL_MAX  = 500;
+float VOL_MIN  = 20;
+float VOL_MAX  = 80;
+float BOUNDARY = 60;
 
 // デバッグ用
 boolean isDelay  = true;
@@ -26,8 +28,10 @@ ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
 void setup() {
   //画面サイズ
-  // size(displayWidth, displayHeight);
-  size(800, 500);
+  size(displayWidth, displayHeight);
+  // size(800, 500);
+  frameRate(60);
+  background(0);
   scClient = new SCClient();
 
   noLoop();
@@ -45,7 +49,10 @@ void draw() {
     isDelay = false;
   }
 
-  background(63);
+  noStroke();
+  fill(0, 30);
+  rectMode(CORNER);
+  rect(0, 0, width, height);
 
   //最大値を0に初期化
   voltageMax = timeMax = 0;
@@ -59,7 +66,7 @@ void draw() {
         voltageMax = v;
         timeMax    = Time3[i];
         // Audio
-        if (playAble && voltageMax > 200) {
+        if (playAble && voltageMax > BOUNDARY) {
           playAble = false;
           scClient.play(voltageMax);
           delay(100);  // 連続再生をさけるために遅延による間引きを入れる
@@ -79,6 +86,8 @@ void draw() {
       hash.put("radius", radius);
       ballList.add(hash);
     }
+
+    fill(255, 100);
 
     for (int i = 0; i < ballList.size(); i++) {
       noStroke();
