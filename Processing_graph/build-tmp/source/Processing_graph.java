@@ -29,13 +29,9 @@ public class Processing_graph extends PApplet {
 
 float voltageMax; //\u96fb\u5727\u306e\u6700\u5927\u5024
 float timeMax; //\u96fb\u5727\u304c\u6700\u5927\u5024\u3060\u3063\u305f\u3068\u304d\u306e\u6642\u9593
-// float VOL_MIN = 110;
-// float VOL_MAX = 130;
-// float VOL_MIN  = 100;
-// float VOL_MAX  = 500;
-float VOL_MIN  = 20;
-float VOL_MAX  = 80;
-float BOUNDARY = 60;
+float VOL_MIN  = 130;
+float VOL_MAX  = 230;
+float BOUNDARY = 180;
 
 // \u30c7\u30d0\u30c3\u30b0\u7528
 boolean isDelay  = true;

@@ -8,13 +8,9 @@ import java.util.*;
 
 float voltageMax; //電圧の最大値
 float timeMax; //電圧が最大値だったときの時間
-// float VOL_MIN = 110;
-// float VOL_MAX = 130;
-// float VOL_MIN  = 100;
-// float VOL_MAX  = 500;
-float VOL_MIN  = 20;
-float VOL_MAX  = 80;
-float BOUNDARY = 60;
+float VOL_MIN  = 130;
+float VOL_MAX  = 230;
+float BOUNDARY = 180;
 
 // デバッグ用
 boolean isDelay  = true;
