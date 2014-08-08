@@ -29,9 +29,13 @@ public class Processing_graph extends PApplet {
 
 float voltageMax; //\u96fb\u5727\u306e\u6700\u5927\u5024
 float timeMax; //\u96fb\u5727\u304c\u6700\u5927\u5024\u3060\u3063\u305f\u3068\u304d\u306e\u6642\u9593
-float VOL_MIN  = 50;
-float VOL_MAX  = 130;
+
+// READ ME
+// Edit these values depending on your environment
+float VOL_MIN  = 70;
+float VOL_MAX  = 350;
 float BOUNDARY = 200;
+// ------------------------------------------------
 
 // \u30c7\u30d0\u30c3\u30b0\u7528
 boolean isDelay  = true;
@@ -67,7 +71,7 @@ public void draw() {
   }
 
   noStroke();
-  fill(0, 30);
+  fill(0, 255);
   rectMode(CORNER);
   rect(0, 0, width, height);
 
@@ -95,12 +99,15 @@ public void draw() {
     if (voltageMax > BOUNDARY) {
       HashMap<String, Float> hash = new HashMap();
       float random_x              = random(1, width);
+      float random_y              = random(1, height);
       float velocity              = map(timeMax, 120, 140, 1, 1.5f);
-      float radius                = map(voltageMax, VOL_MIN, VOL_MAX, 30, 5) * velocity;
+      float radius                = map(voltageMax, VOL_MIN, VOL_MAX, 10, 2) * velocity;
+      float opacity               = 255;
 
       hash.put("x", random_x);
-      hash.put("y", 0.0f);
+      hash.put("y", random_y);
       hash.put("radius", radius);
+      hash.put("opacity", opacity);
       ballList.add(hash);
     }
 
@@ -108,16 +115,24 @@ public void draw() {
 
     for (int i = 0; i < ballList.size(); i++) {
       noStroke();
-      float _x      = (Float)ballList.get(i).get("x");
-      float _y      = (Float)ballList.get(i).get("y");
-      float _radius = (Float)ballList.get(i).get("radius");
+      float _x       = (Float)ballList.get(i).get("x");
+      float _y       = (Float)ballList.get(i).get("y");
+      float _radius  = (Float)ballList.get(i).get("radius");
+      float _opacity = (Float)ballList.get(i).get("opacity");
+      fill(255, 255, 255, _opacity);
       ellipse(_x, _y, _radius, _radius);
-      float _new_y  = _y + 10;
+      float _new_y       = _y + 5;
+      float _new_radius  = _radius + 10;
+      float _new_opacity = _opacity - 10;
+      println("_opacity = " + _opacity);
+      println("_new_opacity = " + _new_opacity);
 
-      if (_new_y > height) {
+      if (_opacity < 0) {
         ballList.remove(i);
       } else {
-        ballList.get(i).put("y", _new_y);
+        // ballList.get(i).put("y", _new_y);
+        ballList.get(i).put("radius", _new_radius);
+        ballList.get(i).put("opacity", _new_opacity);
       }
     }
 
