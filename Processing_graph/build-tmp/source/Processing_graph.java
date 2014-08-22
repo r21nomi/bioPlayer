@@ -42,9 +42,6 @@ boolean isDelay  = true;
 float maxVol     = 0;
 float minVol     = 200;
 
-SCClient scClient;
-boolean playAble = true;
-
 ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
 public void setup() {
@@ -53,7 +50,6 @@ public void setup() {
   // size(800, 500);
   frameRate(60);
   background(0);
-  scClient = new SCClient();
 
   noLoop();
   //\u30dd\u30fc\u30c8\u3092\u8a2d\u5b9a
@@ -87,11 +83,9 @@ public void draw() {
         voltageMax = v;
         timeMax    = Time3[i];
         // Audio
-        if (playAble && voltageMax > BOUNDARY) {
-          playAble = false;
-          scClient.play(voltageMax);
-          delay(100);  // \u9023\u7d9a\u518d\u751f\u3092\u3055\u3051\u308b\u305f\u3081\u306b\u9045\u5ef6\u306b\u3088\u308b\u9593\u5f15\u304d\u3092\u5165\u308c\u308b
-          playAble = true;
+        if (voltageMax > BOUNDARY) {
+          Thread t = new Thread(new SoundThread(voltageMax));
+          t.start();
         }
       }
     }
@@ -819,6 +813,28 @@ How that works: if xMSB = 10001001   and xLSB = 0100 0011
   redraw();
   //    }
 }
+boolean isPlayable = true;
+
+class SoundThread implements Runnable {
+
+  float voltageMax;
+  SCClient scClient;
+
+  public SoundThread(float v){
+    this.voltageMax = v;
+    this.scClient   = new SCClient();
+  }
+
+  public void run() {
+    if (isPlayable == false) {
+      return;
+    }
+    isPlayable = false;
+    this.scClient.play(this.voltageMax);
+    delay(100);  // \u9023\u7d9a\u518d\u751f\u3092\u3055\u3051\u308b\u305f\u3081\u306b\u9045\u5ef6\u306b\u3088\u308b\u9593\u5f15\u304d\u3092\u5165\u308c\u308b
+    isPlayable = true;
+  }
+}
 
 
 
@@ -831,7 +847,7 @@ class SCClient {
 
   public void play(float voltage) {
     // \u65b0\u898f\u306b\u697d\u5668\u3092\u5b9a\u7fa9(\u307e\u3060\u751f\u6210\u306f\u3055\u308c\u305a)
-    synth = new Synth("testInst");
+    synth = new Synth("testInst111");
     // \u5f15\u6570\u3092\u8a2d\u5b9a
     synth.set("amp", 0.5f);
     synth.set("freq", map(voltage, height, 0, 20, 8000));

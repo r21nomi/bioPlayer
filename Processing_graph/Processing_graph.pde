@@ -21,9 +21,6 @@ boolean isDelay  = true;
 float maxVol     = 0;
 float minVol     = 200;
 
-SCClient scClient;
-boolean playAble = true;
-
 ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
 void setup() {
@@ -32,7 +29,6 @@ void setup() {
   // size(800, 500);
   frameRate(60);
   background(0);
-  scClient = new SCClient();
 
   noLoop();
   //ポートを設定
@@ -66,11 +62,9 @@ void draw() {
         voltageMax = v;
         timeMax    = Time3[i];
         // Audio
-        if (playAble && voltageMax > BOUNDARY) {
-          playAble = false;
-          scClient.play(voltageMax);
-          delay(100);  // 連続再生をさけるために遅延による間引きを入れる
-          playAble = true;
+        if (voltageMax > BOUNDARY) {
+          Thread t = new Thread(new SoundThread(voltageMax));
+          t.start();
         }
       }
     }
