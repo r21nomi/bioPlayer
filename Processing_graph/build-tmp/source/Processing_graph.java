@@ -29,17 +29,18 @@ public class Processing_graph extends PApplet {
 
 float voltageMax; //\u96fb\u5727\u306e\u6700\u5927\u5024
 float timeMax; //\u96fb\u5727\u304c\u6700\u5927\u5024\u3060\u3063\u305f\u3068\u304d\u306e\u6642\u9593
-float VOL_MIN  = 50;
-float VOL_MAX  = 130;
+
+// READ ME
+// Edit these values depending on your environment
+float VOL_MIN  = 70;
+float VOL_MAX  = 350;
 float BOUNDARY = 200;
+// ------------------------------------------------
 
 // \u30c7\u30d0\u30c3\u30b0\u7528
 boolean isDelay  = true;
 float maxVol     = 0;
 float minVol     = 200;
-
-SCClient scClient;
-boolean playAble = true;
 
 ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
@@ -49,7 +50,6 @@ public void setup() {
   // size(800, 500);
   frameRate(60);
   background(0);
-  scClient = new SCClient();
 
   noLoop();
   //\u30dd\u30fc\u30c8\u3092\u8a2d\u5b9a
@@ -67,7 +67,7 @@ public void draw() {
   }
 
   noStroke();
-  fill(0, 30);
+  fill(0, 255);
   rectMode(CORNER);
   rect(0, 0, width, height);
 
@@ -83,11 +83,9 @@ public void draw() {
         voltageMax = v;
         timeMax    = Time3[i];
         // Audio
-        if (playAble && voltageMax > BOUNDARY) {
-          playAble = false;
-          scClient.play(voltageMax);
-          delay(100);  // \u9023\u7d9a\u518d\u751f\u3092\u3055\u3051\u308b\u305f\u3081\u306b\u9045\u5ef6\u306b\u3088\u308b\u9593\u5f15\u304d\u3092\u5165\u308c\u308b
-          playAble = true;
+        if (voltageMax > BOUNDARY) {
+          Thread t = new Thread(new SoundThread(voltageMax));
+          t.start();
         }
       }
     }
@@ -95,12 +93,15 @@ public void draw() {
     if (voltageMax > BOUNDARY) {
       HashMap<String, Float> hash = new HashMap();
       float random_x              = random(1, width);
+      float random_y              = random(1, height);
       float velocity              = map(timeMax, 120, 140, 1, 1.5f);
-      float radius                = map(voltageMax, VOL_MIN, VOL_MAX, 30, 5) * velocity;
+      float radius                = map(voltageMax, VOL_MIN, VOL_MAX, 10, 2) * velocity;
+      float opacity               = 255;
 
       hash.put("x", random_x);
-      hash.put("y", 0.0f);
+      hash.put("y", random_y);
       hash.put("radius", radius);
+      hash.put("opacity", opacity);
       ballList.add(hash);
     }
 
@@ -108,16 +109,24 @@ public void draw() {
 
     for (int i = 0; i < ballList.size(); i++) {
       noStroke();
-      float _x      = (Float)ballList.get(i).get("x");
-      float _y      = (Float)ballList.get(i).get("y");
-      float _radius = (Float)ballList.get(i).get("radius");
+      float _x       = (Float)ballList.get(i).get("x");
+      float _y       = (Float)ballList.get(i).get("y");
+      float _radius  = (Float)ballList.get(i).get("radius");
+      float _opacity = (Float)ballList.get(i).get("opacity");
+      fill(255, 255, 255, _opacity);
       ellipse(_x, _y, _radius, _radius);
-      float _new_y  = _y + 10;
+      float _new_y       = _y + 5;
+      float _new_radius  = _radius + 10;
+      float _new_opacity = _opacity - 10;
+      println("_opacity = " + _opacity);
+      println("_new_opacity = " + _new_opacity);
 
-      if (_new_y > height) {
+      if (_opacity < 0) {
         ballList.remove(i);
       } else {
-        ballList.get(i).put("y", _new_y);
+        // ballList.get(i).put("y", _new_y);
+        ballList.get(i).put("radius", _new_radius);
+        ballList.get(i).put("opacity", _new_opacity);
       }
     }
 
@@ -804,6 +813,28 @@ How that works: if xMSB = 10001001   and xLSB = 0100 0011
   redraw();
   //    }
 }
+boolean isPlayable = true;
+
+class SoundThread implements Runnable {
+
+  float voltageMax;
+  SCClient scClient;
+
+  public SoundThread(float v){
+    this.voltageMax = v;
+    this.scClient   = new SCClient();
+  }
+
+  public void run() {
+    if (isPlayable == false) {
+      return;
+    }
+    isPlayable = false;
+    this.scClient.play(this.voltageMax);
+    delay(100);  // \u9023\u7d9a\u518d\u751f\u3092\u3055\u3051\u308b\u305f\u3081\u306b\u9045\u5ef6\u306b\u3088\u308b\u9593\u5f15\u304d\u3092\u5165\u308c\u308b
+    isPlayable = true;
+  }
+}
 
 
 
@@ -816,7 +847,7 @@ class SCClient {
 
   public void play(float voltage) {
     // \u65b0\u898f\u306b\u697d\u5668\u3092\u5b9a\u7fa9(\u307e\u3060\u751f\u6210\u306f\u3055\u308c\u305a)
-    synth = new Synth("testInst");
+    synth = new Synth("testInst111");
     // \u5f15\u6570\u3092\u8a2d\u5b9a
     synth.set("amp", 0.5f);
     synth.set("freq", map(voltage, height, 0, 20, 8000));

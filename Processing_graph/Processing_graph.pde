@@ -11,8 +11,8 @@ float timeMax; //電圧が最大値だったときの時間
 
 // READ ME
 // Edit these values depending on your environment
-float VOL_MIN  = 50;
-float VOL_MAX  = 130;
+float VOL_MIN  = 70;
+float VOL_MAX  = 350;
 float BOUNDARY = 200;
 // ------------------------------------------------
 
@@ -20,9 +20,6 @@ float BOUNDARY = 200;
 boolean isDelay  = true;
 float maxVol     = 0;
 float minVol     = 200;
-
-SCClient scClient;
-boolean playAble = true;
 
 ArrayList<HashMap> ballList = new ArrayList<HashMap>();
 
@@ -32,7 +29,6 @@ void setup() {
   // size(800, 500);
   frameRate(60);
   background(0);
-  scClient = new SCClient();
 
   noLoop();
   //ポートを設定
@@ -50,7 +46,7 @@ void draw() {
   }
 
   noStroke();
-  fill(0, 30);
+  fill(0, 255);
   rectMode(CORNER);
   rect(0, 0, width, height);
 
@@ -66,11 +62,9 @@ void draw() {
         voltageMax = v;
         timeMax    = Time3[i];
         // Audio
-        if (playAble && voltageMax > BOUNDARY) {
-          playAble = false;
-          scClient.play(voltageMax);
-          delay(100);  // 連続再生をさけるために遅延による間引きを入れる
-          playAble = true;
+        if (voltageMax > BOUNDARY) {
+          Thread t = new Thread(new SoundThread(voltageMax));
+          t.start();
         }
       }
     }
@@ -78,12 +72,15 @@ void draw() {
     if (voltageMax > BOUNDARY) {
       HashMap<String, Float> hash = new HashMap();
       float random_x              = random(1, width);
+      float random_y              = random(1, height);
       float velocity              = map(timeMax, 120, 140, 1, 1.5);
-      float radius                = map(voltageMax, VOL_MIN, VOL_MAX, 30, 5) * velocity;
+      float radius                = map(voltageMax, VOL_MIN, VOL_MAX, 10, 2) * velocity;
+      float opacity               = 255;
 
       hash.put("x", random_x);
-      hash.put("y", 0.0);
+      hash.put("y", random_y);
       hash.put("radius", radius);
+      hash.put("opacity", opacity);
       ballList.add(hash);
     }
 
@@ -91,16 +88,24 @@ void draw() {
 
     for (int i = 0; i < ballList.size(); i++) {
       noStroke();
-      float _x      = (Float)ballList.get(i).get("x");
-      float _y      = (Float)ballList.get(i).get("y");
-      float _radius = (Float)ballList.get(i).get("radius");
+      float _x       = (Float)ballList.get(i).get("x");
+      float _y       = (Float)ballList.get(i).get("y");
+      float _radius  = (Float)ballList.get(i).get("radius");
+      float _opacity = (Float)ballList.get(i).get("opacity");
+      fill(255, 255, 255, _opacity);
       ellipse(_x, _y, _radius, _radius);
-      float _new_y  = _y + 10;
+      float _new_y       = _y + 5;
+      float _new_radius  = _radius + 10;
+      float _new_opacity = _opacity - 10;
+      println("_opacity = " + _opacity);
+      println("_new_opacity = " + _new_opacity);
 
-      if (_new_y > height) {
+      if (_opacity < 0) {
         ballList.remove(i);
       } else {
-        ballList.get(i).put("y", _new_y);
+        // ballList.get(i).put("y", _new_y);
+        ballList.get(i).put("radius", _new_radius);
+        ballList.get(i).put("opacity", _new_opacity);
       }
     }
 
