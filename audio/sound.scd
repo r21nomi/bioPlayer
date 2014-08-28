@@ -9,25 +9,3 @@ SynthDef("testInst111",{
 	Out.ar(0, out);
 }).store;
 )
-
-/*s.dumpOSC;
-s.boot;
-
-(
-var buf = Buffer.read(s, path);
-var path = thisProcess.nowExecutingPath.dirname +/+ "audio/audio.wav";
-
- SynthDef("playBufMono", {| out = 0, bufnum = 0, rate = 1 |
-  var scaledRate, player;
-  scaledRate = rate * BufRateScale.kr(bufnum);
-  player = PlayBuf.ar(1, bufnum, scaledRate, doneAction:2);
-  Out.ar(out, player)
- }).add;
-
-buf = Buffer.read(s, path);
-
-SynthDef("testInst111",{
-	// s.sync; // wait for the server
-	Synth(\playBufMono, [\out, 0, \bufnum, buf.bufnum, \rate, 1]).play
-}).store
-)*/

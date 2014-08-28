@@ -1,3 +1,8 @@
+/**
+ * SoundThread
+ * 音の再生をマルチスレッドで行うためのクラス
+ */
+
 boolean isPlayable = true;
 
 class SoundThread implements Runnable {
@@ -15,8 +20,10 @@ class SoundThread implements Runnable {
       return;
     }
     isPlayable = false;
+    // 再生
     this.scClient.play(this.voltageMax);
-    delay(100);  // 連続再生をさけるために遅延による間引きを入れる
+    // 連続再生をさけるために遅延による間引きを入れる
+    delay(100);
     isPlayable = true;
   }
 }
