@@ -33,9 +33,9 @@ float timeMax;    //\u96fb\u5727\u304c\u6700\u5927\u5024\u3060\u3063\u305f\u3068
 /**
  * README
  * Edit these values depending on your environment */
-float VOL_MIN  = 70;
-float VOL_MAX  = 350;
-float BOUNDARY = 200;
+float VOL_MIN  = 15;
+float VOL_MAX  = 40;
+float BOUNDARY = 22;
 /* ----------------------------------------------- */
 
 // \u30c7\u30d0\u30c3\u30b0\u7528

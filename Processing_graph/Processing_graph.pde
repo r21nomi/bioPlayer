@@ -12,9 +12,9 @@ float timeMax;    //電圧が最大値だったときの時間
 /**
  * README
  * Edit these values depending on your environment */
-float VOL_MIN  = 70;
-float VOL_MAX  = 350;
-float BOUNDARY = 200;
+float VOL_MIN  = 15;
+float VOL_MAX  = 40;
+float BOUNDARY = 22;
 /* ----------------------------------------------- */
 
 // デバッグ用
