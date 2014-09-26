@@ -12,9 +12,9 @@ float timeMax;    //電圧が最大値だったときの時間
 /**
  * README
  * Edit these values depending on your environment */
-float VOL_MIN  = 15;
-float VOL_MAX  = 40;
-float BOUNDARY = 22;
+float VOL_MIN  = 90;
+float VOL_MAX  = 400;
+float BOUNDARY = 250;
 /* ----------------------------------------------- */
 
 // デバッグ用
@@ -75,11 +75,13 @@ void draw() {
       float random_y              = random(1, height);
       float velocity              = map(timeMax, 120, 140, 1, 1.5);
       float radius                = map(voltageMax, VOL_MIN, VOL_MAX, 10, 2) * velocity;
+      float col                   = map(voltageMax, BOUNDARY, VOL_MAX, 0, 255);
       float opacity               = 255;
 
       hash.put("x", random_x);
       hash.put("y", random_y);
       hash.put("radius", radius);
+      hash.put("col", col);
       hash.put("opacity", opacity);
       ballList.add(hash);
     }
@@ -91,10 +93,12 @@ void draw() {
       float _x       = (Float)ballList.get(i).get("x");
       float _y       = (Float)ballList.get(i).get("y");
       float _radius  = (Float)ballList.get(i).get("radius");
+      float _col     = (Float)ballList.get(i).get("col");
       float _opacity = (Float)ballList.get(i).get("opacity");
 
       // パーティクルの描画
-      fill(255, 255, 255, _opacity);
+      // fill(255, 255, 255, _opacity);
+      fill(_col, 10, _col, _opacity);
       ellipse(_x, _y, _radius, _radius);
 
       float _new_y       = _y + 5;
