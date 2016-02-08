@@ -12,9 +12,9 @@ float timeMax;    //電圧が最大値だったときの時間
 /**
  * README
  * Edit these values depending on your environment */
-float VOL_MIN  = 15;
-float VOL_MAX  = 40;
-float BOUNDARY = 22;
+float VOL_MIN  = 24;
+float VOL_MAX  = 189;
+float BOUNDARY = 100;
 /* ----------------------------------------------- */
 
 // デバッグ用
@@ -31,8 +31,6 @@ void setup() {
   background(0);
 
   noLoop();
-  // ポートを設定（環境によってインデックスが異なるのでforループで一覧を表示させて確認すると良い）
-  PortSelected = 2;
   // シリアルポートを初期化
   SerialPortSetup();
 }
