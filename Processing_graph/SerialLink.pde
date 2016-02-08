@@ -2,7 +2,7 @@ import processing.serial.*;
 
 // 自身の環境のポートを指定
 int SerialPortNumber = 2;
-int PortSelected     = 2;
+int PortSelected     = 1;
 
 int xValue, yValue, Command;
 boolean Error       = true;
